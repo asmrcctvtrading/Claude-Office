@@ -134,6 +134,9 @@
   background: #1a1510;
   overflow: hidden;
   flex-shrink: 0;
+  /* Hard clipping: ensures nothing renders outside container bounds */
+  clip-path: inset(0);
+  contain: layout style paint;
 }
 
 .room-background {

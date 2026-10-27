@@ -66,12 +66,12 @@ export function assignSpot(
 /**
  * Clamp agent position to valid office bounds.
  * Prevents agents from rendering outside the visible office area.
- * X: 3-97%, Y: 10-90% ensures agents stay well within visible bounds.
+ * Using tight bounds: X: 5-95%, Y: 15-85% with sprite overflow margin.
  */
 function clampPosition(pos: Position): Position {
   return {
-    x: Math.max(3, Math.min(97, pos.x)),
-    y: Math.max(10, Math.min(90, pos.y)),
+    x: Math.max(5, Math.min(95, pos.x)),
+    y: Math.max(15, Math.min(85, pos.y)),
   }
 }
 

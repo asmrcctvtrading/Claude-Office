@@ -190,6 +190,9 @@
   overflow: hidden;
   min-height: 0;
   min-width: 0;
+  /* Hard clipping: ensures office content never escapes viewport */
+  clip-path: inset(0);
+  contain: layout style paint;
 }
 
 .office-container {

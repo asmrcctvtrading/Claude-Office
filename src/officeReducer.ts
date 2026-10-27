@@ -266,13 +266,13 @@ export function pickSpot(agents: Agent[], role: string): AgentSpot | null {
 }
 
 /**
- * Clamp position to valid office bounds (3-97% x, 10-90% y)
- * to ensure agents never render outside the office window.
+ * Clamp position to valid office bounds (5-95% x, 15-85% y)
+ * to ensure agents never render outside the office window, accounting for sprite overflow.
  */
 function clampPosition(pos: Position): Position {
   return {
-    x: Math.max(3, Math.min(97, pos.x)),
-    y: Math.max(10, Math.min(90, pos.y)),
+    x: Math.max(5, Math.min(95, pos.x)),
+    y: Math.max(15, Math.min(85, pos.y)),
   }
 }
 
