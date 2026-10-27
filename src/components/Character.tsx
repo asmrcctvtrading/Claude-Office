@@ -222,6 +222,9 @@ const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex
 
   const transformValue = 'translate(-50%, -50%)'
 
+  // Agent positions are clamped to bounds (3-97% x, 10-90% y) in agentManager.stepToward and
+  // officeReducer.lobbyPosition to prevent rendering outside the office window. The room-container
+  // has overflow: hidden for visual clipping as a secondary safety measure.
   return (
     <div
       className={`character-wrapper state-${animState} posture-${posture}${mainState ? ` main-${mainState}` : ''}${scene ? ` scene-${scene.kind}` : ''}${onClick ? ' clickable' : ''}${inspected ? ' inspected' : ''}`}

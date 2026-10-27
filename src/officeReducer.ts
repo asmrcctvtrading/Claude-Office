@@ -266,13 +266,28 @@ export function pickSpot(agents: Agent[], role: string): AgentSpot | null {
 }
 
 /**
+ * Clamp position to valid office bounds (3-97% x, 10-90% y)
+ * to ensure agents never render outside the office window.
+ */
+function clampPosition(pos: Position): Position {
+  return {
+    x: Math.max(3, Math.min(97, pos.x)),
+    y: Math.max(10, Math.min(90, pos.y)),
+  }
+}
+
+/**
  * Where the n-th lobby waiter stands: along the wall either side of the door,
  * never on the doormat itself, so arrivals and leavers can still get past.
+ * Clamped to office bounds to prevent agents appearing outside visible area.
  */
 export function lobbyPosition(slot: number): Position {
   const side = slot % 2 === 0 ? -1 : 1
   const rank = Math.floor(slot / 2)
-  return { x: ENTRY.x + side * (3.5 + rank * 2.6), y: ENTRY.y + side * (2.3 + rank * 1.7) }
+  return clampPosition({
+    x: ENTRY.x + side * (3.5 + rank * 2.6),
+    y: ENTRY.y + side * (2.3 + rank * 1.7),
+  })
 }
 
 function freeLobbySlot(state: OfficeState): number {
