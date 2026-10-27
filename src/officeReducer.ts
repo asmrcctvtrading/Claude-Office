@@ -1478,7 +1478,7 @@ export function stepOffice(state: OfficeState, dt: number, env: OfficeEnv): Step
         const isAtDoor = near(agent.targetPosition, DOOR_TARGET)
 
         if (agent.state === 'new-hire' || agent.state === 'walking-to-desk') {
-          if (isAtDesk || agent.state === 'new-hire') {
+          if (isAtDesk) {
             setMeta(agent.id, { arrivedAtDeskAt: now, onBreak: false, ...(m.homeFromHandover ? { homeFromHandover: false } : {}) })
             if (agent.assignedSpotId === 'spot-filing') effects.push({ kind: 'furniture', id: 'filing-1', state: 'open' })
             // A worker's status that arrived while they were walking in applies now (C13)

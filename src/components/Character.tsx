@@ -61,6 +61,24 @@ function getAnimState(state: AgentState): string {
   }
 }
 
+function getMoodEmoji(state: AgentState, isMoving: boolean, lastFailed?: boolean): string {
+  if (lastFailed) return '😤'  // problem-solving
+  if (state === 'working') return isMoving ? '😓' : '😊'  // busy or happy
+  if (state === 'idle') return '💭'  // thinking
+  if (state === 'completed') return '✅'  // completed task
+  if (state === 'new-hire' || state === 'waiting') return '💭'  // thinking
+  if (state === 'coffee-break') return '☕'  // coffee break
+  return '💭'  // default thinking
+}
+
+/** Determines if agent is sitting (at desk) or standing (walking/idle) */
+function getPosture(state: AgentState): 'sitting' | 'standing' {
+  // Sitting at desk when working or idle
+  if (state === 'working' || state === 'idle') return 'sitting'
+  // Standing/walking everywhere else
+  return 'standing'
+}
+
 // Speech bubble only shown briefly when statusText changes (like posting to Slack)
 const BUBBLE_MS = 3200
 const SPEAKING_Z = 99
@@ -156,9 +174,16 @@ const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex
   const charBase = getCharBase(agent.role)
   const theme = useTheme() // Why: re-render on theme toggle so sprite path updates
   const spriteSrc = getSpritePath(agent.id, agent.role, charBase, directionRef.current)
+  if (agent.id.startsWith('agent-') && (!spriteSrc || spriteSrc.includes('undefined'))) {
+    console.warn('[DEBUG-SPRITE] Invalid sprite for custom agent', { id: agent.id, role: agent.role, charBase, spriteSrc })
+  }
   void theme
   const variant = useVariant() // Why: re-render when incident mode flips so the failure bubble shows/hides
   void variant
+
+  // Mood emoji and posture
+  const moodEmoji = getMoodEmoji(agent.state, isMoving, agent.lastFailed)
+  const posture = getPosture(agent.state)
 
   // A session's Claude wears its main-thread state: a hand up while it waits on
   // you, a warning on an API error, a broom during a memory wipe, a glass of
@@ -188,13 +213,22 @@ const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex
     : mainState === 'error' ? `⚠ API error${projectTag ? ` · ${projectTag}` : ''}` : null
   const tooltip = [agent.name, projectTag, main && agent.statusText ? `— ${agent.statusText}` : null].filter(Boolean).join(' ')
 
+  // Debug custom agents' coordinates - detailed logging
+  if (agent.id.startsWith('agent-') && Math.random() < 0.01) { // Log 1% of renders
+    const wrapper = typeof window !== 'undefined' ? document.querySelector(`[data-agent-id="${agent.id}"]`) : null
+    const wrapperRect = wrapper?.getBoundingClientRect()
+    console.log(`[DEBUG-RENDER-ACTUAL] Agent ${agent.id}: transform=translate(-50%,-50%), left:${agent.position.x}%, top:${agent.position.y}%, actual_pixel_pos=(${wrapperRect?.left.toFixed(1) || 'N/A'},${wrapperRect?.top.toFixed(1) || 'N/A'})`)
+  }
+
+  const transformValue = 'translate(-50%, -50%)'
+
   return (
     <div
-      className={`character-wrapper state-${animState}${mainState ? ` main-${mainState}` : ''}${scene ? ` scene-${scene.kind}` : ''}${onClick ? ' clickable' : ''}${inspected ? ' inspected' : ''}`}
+      className={`character-wrapper state-${animState} posture-${posture}${mainState ? ` main-${mainState}` : ''}${scene ? ` scene-${scene.kind}` : ''}${onClick ? ' clickable' : ''}${inspected ? ' inspected' : ''}`}
       style={{
         left: `${agent.position.x}%`,
         top: `${agent.position.y}%`,
-        transform: 'translate(-50%, -100%)',
+        transform: transformValue,
         zIndex: speaking ? SPEAKING_Z : zIndex ?? Math.round(agent.position.y),
       }}
       title={projectTag || main ? tooltip : undefined}
@@ -224,6 +258,11 @@ const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex
           ✉ {agent.unread > 9 ? '9+' : agent.unread}
         </div>
       )}
+
+      {/* Mood emoji above agent head */}
+      <div className="char-mood-emoji" role="img" aria-label={`${agent.name} mood: ${moodEmoji}`}>
+        {moodEmoji}
+      </div>
 
       {bubbleText && (
         // The boss handing a prompt over at Claude's desk (purple bubble); any other visitor keeps the plain one

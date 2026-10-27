@@ -194,8 +194,8 @@
 
 .office-container {
   position: relative;
-  width: 500px;
-  height: 500px;
+  width: 700px;
+  height: 467px;
   background: var(--floor);
   overflow: hidden;
   flex-shrink: 0;
@@ -483,6 +483,25 @@
   to   { transform: scale(1);   opacity: 1; }
 }
 
+/* Mood emoji above agent head — shows emotional state */
+.char-mood-emoji {
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 13;
+  font-size: 16px;
+  line-height: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+  animation: moodBob 2s ease-in-out infinite;
+}
+
+@keyframes moodBob {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-3px); }
+}
+
 /* Project tag under the sprite — shown when more than one session is in the office */
 .char-project {
   position: absolute;
@@ -539,6 +558,23 @@
 .character-wrapper.state-new-hire {
   filter: drop-shadow(0 0 6px #ffd700);
   animation: hireGlow 0.8s ease-in-out infinite alternate;
+}
+
+/* ===== POSTURE — Sitting at desk vs Standing/Walking ===== */
+/* Sitting: hunched over desk, subtle typing animation */
+.character-wrapper.posture-sitting {
+  /* Subtle sit-at-desk visual: slightly reduced opacity filter for "focused" look */
+  filter: brightness(1);
+}
+.character-wrapper.posture-sitting .char-sprite {
+  /* Sitting agents get a slight "hunch" effect - scaling down slightly */
+  transform-origin: center bottom;
+}
+
+/* Standing: upright, ready to walk around */
+.character-wrapper.posture-standing {
+  /* Standing agents are more vibrant */
+  filter: brightness(1.05);
 }
 
 @keyframes idleBob {

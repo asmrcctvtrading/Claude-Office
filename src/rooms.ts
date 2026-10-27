@@ -84,8 +84,8 @@ export const ROOMS: Record<RoomId, Room> = {
       day: '/rooms/office-day.png',
       night: '/rooms/office-night.png',
     },
-    width: 800,
-    height: 600,
+    width: 2200,
+    height: 1400,
     furniture: [
       // Desk cluster - back
       { id: 'desk-1a', type: 'desk-standing', sprite: 'desk-standing-left-rear', x: 42.4, y: 50.4 },
@@ -124,33 +124,48 @@ export const ROOMS: Record<RoomId, Room> = {
       { toRoom: 'manager-office', position: { x: 67.5, y: 48.9 }, label: "Manager's Office", exitFacing: 'rear-right', entryFacing: 'front-right' },
     ],
     agentSpots: [
-      // Desk spots
+      // Desk spots - expanded across larger 2200x1400 canvas
       // In front of desk: rear-left/rear-right (z higher than desk)
       // Behind desk: front-left/front-right (z lower than desk)
-      // Front-left cluster: desks at y ~65-70
-      { id: 'spot-1', type: 'desk', x: 25.8, y: 71, facing: 'down', spriteFacing: 'rear-left', zIndex: 85 },
-      { id: 'spot-2', type: 'desk', x: 37.9, y: 68.2, facing: 'down', spriteFacing: 'rear-right', zIndex: 85 },
-      { id: 'spot-3', type: 'desk', x: 26.9, y: 59.2, facing: 'down', spriteFacing: 'front-left', zIndex: 40 },
-      // Back cluster: desks at y ~50-55
-      { id: 'spot-4', type: 'desk', x: 38.5, y: 55.2, facing: 'down', spriteFacing: 'rear-left', zIndex: 58 },
-      { id: 'spot-5', type: 'desk', x: 48.9, y: 52.9, facing: 'down', spriteFacing: 'rear-right', zIndex: 70 },
-      { id: 'spot-6', type: 'desk', x: 38.8, y: 43.6, facing: 'down', spriteFacing: 'front-left', zIndex: 30 },
-      // Right cluster: desks at y ~72-79
-      { id: 'spot-7', type: 'desk', x: 52.7, y: 78.8, facing: 'down', spriteFacing: 'rear-left', zIndex: 95 },
-      { id: 'spot-8', type: 'desk', x: 65.9, y: 75.8, facing: 'down', spriteFacing: 'rear-right', zIndex: 95 },
-      { id: 'spot-9', type: 'desk', x: 55.2, y: 66.8, facing: 'down', spriteFacing: 'front-left', zIndex: 55 },
-      { id: 'spot-10', type: 'desk', x: 68.7, y: 66.2, facing: 'down', spriteFacing: 'front-right', zIndex: 55 },
-      // Activity spots
-      { id: 'spot-coffee-1', type: 'coffee', x: 73.5, y: 56.7, facing: 'down', spriteFacing: 'rear-left' },
-      { id: 'spot-coffee-2', type: 'coffee', x: 76.2, y: 58.4, facing: 'down', spriteFacing: 'front-right' },
-      { id: 'spot-water-1', type: 'water', x: 53.3, y: 46.6, facing: 'down', spriteFacing: 'rear-left' },
-      { id: 'spot-water-2', type: 'water', x: 56, y: 47.7, facing: 'down', spriteFacing: 'front-right' },
-      { id: 'spot-filing', type: 'filing', x: 47.8, y: 57.6, facing: 'down', spriteFacing: 'front-right', zIndex: 70 },
-      { id: 'spot-printer', type: 'printer', x: 81, y: 63, facing: 'down', spriteFacing: 'rear-left' },
-      { id: 'spot-door-2', type: 'door', x: 64, y: 46.6, facing: 'down', spriteFacing: 'rear-right' },
-      { id: 'spot-door-3', type: 'door', x: 69.9, y: 50.8, facing: 'down', spriteFacing: 'front-right' },
+      // Front-left cluster: desks at y ~60-75
+      { id: 'spot-1', type: 'desk', x: 12, y: 72, facing: 'down', spriteFacing: 'rear-left', zIndex: 85 },
+      { id: 'spot-2', type: 'desk', x: 22, y: 70, facing: 'down', spriteFacing: 'rear-right', zIndex: 85 },
+      { id: 'spot-3', type: 'desk', x: 13, y: 58, facing: 'down', spriteFacing: 'front-left', zIndex: 40 },
+      // Back cluster: desks at y ~48-55
+      { id: 'spot-4', type: 'desk', x: 22, y: 55, facing: 'down', spriteFacing: 'rear-left', zIndex: 58 },
+      { id: 'spot-5', type: 'desk', x: 32, y: 52, facing: 'down', spriteFacing: 'rear-right', zIndex: 70 },
+      { id: 'spot-6', type: 'desk', x: 22, y: 42, facing: 'down', spriteFacing: 'front-left', zIndex: 30 },
+      // Right-center cluster: desks at y ~72-80
+      { id: 'spot-7', type: 'desk', x: 35, y: 80, facing: 'down', spriteFacing: 'rear-left', zIndex: 95 },
+      { id: 'spot-8', type: 'desk', x: 48, y: 77, facing: 'down', spriteFacing: 'rear-right', zIndex: 95 },
+      { id: 'spot-9', type: 'desk', x: 37, y: 66, facing: 'down', spriteFacing: 'front-left', zIndex: 55 },
+      { id: 'spot-10', type: 'desk', x: 50, y: 64, facing: 'down', spriteFacing: 'front-right', zIndex: 55 },
+      // Upper left area
+      { id: 'spot-11', type: 'desk', x: 12, y: 32, facing: 'down', spriteFacing: 'rear-left', zIndex: 65 },
+      { id: 'spot-12', type: 'desk', x: 22, y: 30, facing: 'down', spriteFacing: 'rear-right', zIndex: 70 },
+      { id: 'spot-13', type: 'desk', x: 13, y: 20, facing: 'down', spriteFacing: 'front-left', zIndex: 35 },
+      // Upper middle area
+      { id: 'spot-14', type: 'desk', x: 35, y: 32, facing: 'down', spriteFacing: 'rear-left', zIndex: 62 },
+      { id: 'spot-15', type: 'desk', x: 47, y: 30, facing: 'down', spriteFacing: 'rear-right', zIndex: 68 },
+      // Right expanded area
+      { id: 'spot-16', type: 'desk', x: 60, y: 80, facing: 'down', spriteFacing: 'rear-left', zIndex: 92 },
+      { id: 'spot-17', type: 'desk', x: 72, y: 77, facing: 'down', spriteFacing: 'rear-right', zIndex: 92 },
+      { id: 'spot-18', type: 'desk', x: 60, y: 32, facing: 'down', spriteFacing: 'rear-left', zIndex: 60 },
+      // Far right area
+      { id: 'spot-19', type: 'desk', x: 72, y: 22, facing: 'down', spriteFacing: 'rear-left', zIndex: 38 },
+      // Bottom right area
+      { id: 'spot-20', type: 'desk', x: 55, y: 42, facing: 'down', spriteFacing: 'rear-right', zIndex: 50 },
+      // Activity spots - spread across expanded office
+      { id: 'spot-coffee-1', type: 'coffee', x: 55, y: 56, facing: 'down', spriteFacing: 'rear-left' },
+      { id: 'spot-coffee-2', type: 'coffee', x: 58, y: 58, facing: 'down', spriteFacing: 'front-right' },
+      { id: 'spot-water-1', type: 'water', x: 38, y: 46, facing: 'down', spriteFacing: 'rear-left' },
+      { id: 'spot-water-2', type: 'water', x: 41, y: 48, facing: 'down', spriteFacing: 'front-right' },
+      { id: 'spot-filing', type: 'filing', x: 32, y: 57, facing: 'down', spriteFacing: 'front-right', zIndex: 70 },
+      { id: 'spot-printer', type: 'printer', x: 62, y: 62, facing: 'down', spriteFacing: 'rear-left' },
+      { id: 'spot-door-2', type: 'door', x: 48, y: 46, facing: 'down', spriteFacing: 'rear-right' },
+      { id: 'spot-door-3', type: 'door', x: 52, y: 50, facing: 'down', spriteFacing: 'front-right' },
     ],
-    entryPoint: { x: 67.5, y: 48.9 },
+    entryPoint: { x: 50, y: 40 },
     walkableArea: [
       { x: 28.2, y: 46 },
       { x: 33, y: 50.2 },

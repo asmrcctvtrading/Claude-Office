@@ -12,7 +12,8 @@ import AgentCard from './components/AgentCard'
 import PermissionCards from './components/PermissionCard'
 import { isPermissionEvent, reducePermissions, setUiToken, type PermissionAction, type PermissionCardState } from './permissions'
 import StatusStrip from './components/StatusStrip'
-import { Agent, AGENT_CONFIGS } from './types'
+import { Agent, AGENT_CONFIGS, type AgentState } from './types'
+import type { RoomId } from './rooms'
 import { getCurrentPhase, getPhaseLabel, type DayPhase } from './daylight'
 import { useAgentSocket } from './hooks/useAgentSocket'
 import { dispatchMeters } from './meters'
@@ -150,6 +151,106 @@ function createClaude(): Agent {
   }
 }
 
+// Create all 18 Odyssey custom agents
+function createCustomOdysseyAgents(): Agent[] {
+  console.log('[DEBUG-FUNC] createCustomOdysseyAgents called, MAIN_ROOM:', MAIN_ROOM?.id, 'entry:', MAIN_ROOM?.entryPoint)
+
+  if (!MAIN_ROOM) {
+    console.error('[ERROR-MAIN] MAIN_ROOM is undefined!')
+    return []
+  }
+
+  if (!MAIN_ROOM.agentSpots) {
+    console.error('[ERROR-MAIN] MAIN_ROOM.agentSpots is undefined!')
+    return []
+  }
+
+  try {
+    console.log('[DEBUG-FUNC] Inside try block, proceeding with agent creation')
+
+    const customAgents: Array<{ id: string; name: string; role: string; task: string }> = [
+      // Project agents
+      { id: 'agent-atlas', name: 'Atlas', role: 'atlas', task: 'Running the team' },
+      { id: 'agent-rex', name: 'Rex', role: 'rex', task: 'Building PHP code' },
+      { id: 'agent-rhoda', name: 'Rhoda', role: 'rhoda', task: 'Testing systems' },
+      { id: 'agent-sage', name: 'Sage', role: 'sage', task: 'Auditing security' },
+      { id: 'agent-bolt', name: 'Bolt', role: 'bolt', task: 'Exploring code' },
+      { id: 'agent-nova', name: 'Nova', role: 'nova', task: 'Designing systems' },
+      { id: 'agent-iris', name: 'Iris', role: 'iris', task: 'Writing docs' },
+      // Built-in agents
+      { id: 'agent-pinuno', name: 'Pinuno', role: 'pinuno', task: 'Coordinating work' },
+      { id: 'agent-claude', name: 'Claude', role: 'claude', task: 'General purpose' },
+      { id: 'agent-hermy', name: 'Hermy', role: 'hermy', task: 'Guiding users' },
+      { id: 'agent-lucille', name: 'Lucille', role: 'lucille', task: 'Writing content' },
+      { id: 'agent-dora', name: 'Dora', role: 'dora', task: 'Searching code' },
+      { id: 'agent-profx', name: 'ProFX', role: 'profx', task: 'Multi-purpose work' },
+      { id: 'agent-betty', name: 'Betty', role: 'betty', task: 'Assisting users' },
+      { id: 'agent-hansel', name: 'Hansel', role: 'hansel', task: 'Development' },
+      { id: 'agent-ulikba', name: 'Ulikba', role: 'ulikba', task: 'Planning features' },
+      { id: 'agent-sarah', name: 'Sarah', role: 'sarah', task: 'Quality assurance' },
+      { id: 'agent-jay', name: 'Jay', role: 'jay', task: 'Architecture design' },
+    ]
+
+    const entry = MAIN_ROOM.entryPoint
+    const spots = MAIN_ROOM.agentSpots.filter(s => s.type === 'desk')
+    console.log('[DEBUG-FUNC] Found desks:', spots.length, 'total agentSpots:', MAIN_ROOM.agentSpots.length)
+
+    const agents: Agent[] = []
+    console.log('[DEBUG-FUNC] Starting agent creation loop, customAgents length:', customAgents.length, 'spots length:', spots.length)
+    console.log('[DEBUG-POS] Entry point:', entry, 'Room bounds: x:0-100, y:0-100')
+
+    for (let idx = 0; idx < customAgents.length; idx++) {
+      const agent = customAgents[idx]
+      console.log(`[DEBUG-FUNC] Creating agent ${idx + 1}/18: ${agent.id}`)
+
+      const cfg = AGENT_CONFIGS[agent.role] ?? AGENT_CONFIGS['default']
+      const spot = spots[idx % spots.length] ?? { id: `spot-custom-${idx}`, type: 'desk' as const, x: 30 + (idx % 5) * 8, y: 40 + Math.floor(idx / 5) * 8 }
+      const target = { x: spot.x, y: spot.y }
+
+      console.log(`[DEBUG-POS] Agent ${agent.id} assigned to desk ${spot.id} at position: x:${spot.x}, y:${spot.y}`)
+
+      // Try to compute path, but don't fail if it errors
+      let path: Array<{ x: number; y: number }> = []
+      try {
+        path = computePath(entry, target)
+        console.log(`[DEBUG-PATH] Agent ${agent.id}: computed path with ${path.length} waypoints from (${entry.x},${entry.y}) to (${target.x},${target.y})`)
+      } catch (pathErr) {
+        console.warn(`[WARN] Path computation failed for ${agent.id}, using empty path:`, pathErr)
+      }
+
+      const newAgent: Agent = {
+        id: agent.id,
+        name: agent.name,
+        type: 'subagent' as const,
+        role: agent.role,
+        state: 'new-hire' as AgentState,
+        position: { x: entry.x, y: entry.y },
+        targetPosition: target,
+        deskPosition: target,
+        room: 'main-office' as RoomId,
+        assignedRoom: 'main-office' as RoomId,
+        assignedSpotId: spot.id,
+        spriteFacing: spot.spriteFacing ?? 'front-left' as const,
+        task: agent.task,
+        statusText: 'clocked in',
+        color: cfg.color,
+        emoji: cfg.emoji,
+        hiredAt: Date.now() + idx * 100,
+        pathQueue: path,
+      }
+
+      agents.push(newAgent)
+      console.log(`[DEBUG-FUNC] Agent ${idx + 1} created:`, newAgent.id, 'desk:', newAgent.assignedSpotId)
+    }
+
+    console.log('[DEBUG-FUNC] Agent creation loop complete, returning:', agents.length, 'agents')
+    return agents
+  } catch (err) {
+    console.error('[ERROR] createCustomOdysseyAgents failed:', err)
+    return []
+  }
+}
+
 // ---------------------------------------------------------------------------
 // App component
 // ---------------------------------------------------------------------------
@@ -256,8 +357,34 @@ const App: React.FC = () => {
   // Live: the boss alone until the server names a session — each terminal
   // then gets its own Claude (officeReducer ensureClaude). ?sim / ?video have
   // no sessions, so the decorative Claude keeps its desk there.
-  if (officeRef.current === null) officeRef.current = initialOfficeState(isSimMode ? [createBoss(), createClaude()] : [createBoss()], Date.now())
-  const [agents, setAgents] = useState<Agent[]>(() => officeRef.current!.agents)
+  if (officeRef.current === null) {
+    console.log('[DEBUG-INIT] Initializing office state, isSimMode:', isSimMode)
+    const boss = createBoss()
+    console.log('[DEBUG-INIT] Boss created:', boss.id)
+
+    const customAgents = createCustomOdysseyAgents()
+    console.log('[DEBUG-INIT] Custom agents created:', customAgents.length, 'agents')
+    if (customAgents.length > 0) {
+      console.log('[DEBUG-INIT] First 3 custom agents:', customAgents.slice(0, 3).map(a => ({ id: a.id, role: a.role, desk: a.assignedSpotId, pos: a.position })))
+    }
+
+    const allAgents = isSimMode
+      ? [boss, createClaude(), ...customAgents]
+      : [boss, ...customAgents]
+    console.log('[DEBUG-INIT] Total agents in office:', allAgents.length, 'expected: 20')
+    console.log('[DEBUG-INIT] Agent IDs:', allAgents.map(a => a.id))
+
+    officeRef.current = initialOfficeState(allAgents, Date.now())
+    console.log('[DEBUG-INIT] Office state created with', officeRef.current.agents.length, 'agents')
+  }
+  const [agents, setAgents] = useState<Agent[]>(() => {
+    const initialAgents = officeRef.current!.agents
+    console.log('[DEBUG-STATE] Setting initial agents state, count:', initialAgents.length)
+    console.log('[DEBUG-STATE] Agent IDs:', initialAgents.map(a => a.id).join(', '))
+    const customAgents = initialAgents.filter(a => a.id.startsWith('agent-'))
+    console.log('[DEBUG-STATE] Custom agents:', customAgents.length, 'IDs:', customAgents.map(a => a.id).join(', '))
+    return initialAgents
+  })
   // Always officeRef.current.agents — for callbacks that only need the roster
   const agentsRef = useRef<Agent[]>(officeRef.current.agents)
 
@@ -1167,6 +1294,10 @@ const App: React.FC = () => {
   useEffect(() => {
     let rafId: number
     let lastTime = performance.now()
+    let debugLogged = false
+    let prevAgentCount = 0
+    let prevCustomStates: Record<string, string> = {}
+    let firstFrameProcessed = false
 
     function tick(now: number) {
       const dt = Math.min((now - lastTime) / 16.67, 3)
@@ -1176,7 +1307,69 @@ const App: React.FC = () => {
       // pruning and lobby seating) on top of whatever state is current *now*,
       // so an event that landed during this frame is never overwritten (C14).
       const { state, effects, changed } = stepOffice(officeRef.current!, dt, officeEnv())
-      if (changed) commit(state)
+
+      // Track agent count and state changes
+      const customAgents = state.agents.filter(a => a.id.startsWith('agent-'))
+      const currentAgentCount = state.agents.length
+
+      // Log on first step
+      if (!debugLogged && changed) {
+        debugLogged = true
+        console.log('[DEBUG-STEP] Custom agents after first step:', customAgents.slice(0, 3).map(a => ({
+          id: a.id, state: a.state, pos: `(${a.position.x.toFixed(1)},${a.position.y.toFixed(1)})`, desk: `(${a.deskPosition.x.toFixed(1)},${a.deskPosition.y.toFixed(1)})`, inLobby: state.lobby.includes(a.id)
+        })))
+      }
+
+      // Log if agent count changed
+      if (currentAgentCount !== prevAgentCount) {
+        console.warn(`[WARN-AGENTS] Agent count changed from ${prevAgentCount} to ${currentAgentCount}`)
+        console.log('[WARN-AGENTS] Current agents:', state.agents.map(a => a.id))
+        prevAgentCount = currentAgentCount
+      }
+
+      // Log if any custom agent state changed to 'completed'
+      for (const agent of customAgents) {
+        const prevState = prevCustomStates[agent.id]
+        if (prevState && prevState !== agent.state) {
+          console.warn(`[WARN-STATE] Agent ${agent.id} transitioned from ${prevState} → ${agent.state}`)
+        }
+        if (agent.state === 'completed') {
+          console.error(`[ERROR-STATE] Agent ${agent.id} in completed state (should not happen)`)
+        }
+        prevCustomStates[agent.id] = agent.state
+      }
+
+      // Prevent custom agents from leaving - keep them in working state
+      const stateWithProtectedAgents = (() => {
+        const customAgentIds = state.agents.filter(a => a.id.startsWith('agent-')).map(a => a.id)
+        if (customAgentIds.some(id => state.agents.find(a => a.id === id)?.state === 'completed')) {
+          console.warn('[PROTECT-AGENTS] Resetting custom agents that tried to leave')
+          return {
+            ...state,
+            agents: state.agents.map(a => {
+              if (a.id.startsWith('agent-') && a.state === 'completed') {
+                console.log(`[PROTECT-AGENTS] Resetting ${a.id} from completed to working`)
+                return { ...a, state: 'working' as AgentState, targetPosition: a.deskPosition, position: a.deskPosition }
+              }
+              return a
+            })
+          }
+        }
+        return state
+      })()
+
+      // On first frame, ensure agents state has all agents including custom ones
+      if (!firstFrameProcessed) {
+        firstFrameProcessed = true
+        const customAgents = stateWithProtectedAgents.agents.filter(a => a.id.startsWith('agent-'))
+        console.log('[DEBUG-FRAME] First frame: total agents:', stateWithProtectedAgents.agents.length, 'custom:', customAgents.length)
+        if (customAgents.length > 0 || stateWithProtectedAgents.agents.length > 0) {
+          console.log('[DEBUG-FRAME] First frame - forcing commit of agents state')
+          commit(stateWithProtectedAgents)
+        }
+      } else if (changed) {
+        commit(stateWithProtectedAgents)
+      }
       runEffects(effects)
 
       rafId = requestAnimationFrame(tick)
@@ -1451,7 +1644,7 @@ const App: React.FC = () => {
         <div
           className={`room-container${flickering ? ' flickering' : ''}${variant === 'incident' ? ' incident' : ''}`}
           style={{
-            aspectRatio: '4800/3584',
+            aspectRatio: '2200/1400',
             width: '100%',
             maxHeight: '100%',
             position: 'relative',
@@ -1472,14 +1665,89 @@ const App: React.FC = () => {
             }}
           />
 
+          {/* Debug coordinate system */}
+          {(() => {
+            const containerRect = typeof window !== 'undefined' ? document.querySelector('.room-container')?.getBoundingClientRect() : null
+            if (containerRect && Math.random() < 0.01) { // Log only 1% of renders to avoid spam
+              console.log('[DEBUG-COORD] room-container pixel size:', { width: containerRect.width.toFixed(1), height: containerRect.height.toFixed(1), ratio: (containerRect.width / containerRect.height).toFixed(3) })
+              console.log('[DEBUG-COORD] Expected ratio (2200/1400):', (2200/1400).toFixed(3))
+            }
+            return null
+          })()}
+
           {/* Furniture — apply interactive state overrides */}
           <FurnitureRenderer onItemClick={handleFurnitureClick} items={furnitureItems} />
 
           {/* The session's real task list on the kanban whiteboard (nothing drawn while no session has tasks) */}
           <TaskBoard sessions={sessions} night={forcedNight ? 1 : dayNightMode === 'auto' ? nightOpacity : dayNightMode === 'night' ? 1 : 0} onActivate={() => handleFurnitureClick('kanban-board')} />
 
+          {/* Debug overlay: show desk positions and agent positions */}
+          {(() => {
+            if (Math.random() < 0.01) { // Log 1% to reduce spam
+              const customAgents = agents.filter(a => a.id.startsWith('agent-'))
+              console.log('[DEBUG-POSITIONS] Custom agents with desks:')
+              customAgents.slice(0, 3).forEach(a => {
+                console.log(`  ${a.id}: visual_pos=${a.position.x.toFixed(1)}%,${a.position.y.toFixed(1)}% desk=${a.deskPosition.x.toFixed(1)}%,${a.deskPosition.y.toFixed(1)}%`)
+              })
+            }
+            return null
+          })()}
+
+          {/* Visual debug: render desk position markers (green circles) and agent position markers (red circles) */}
+          {(() => {
+            // Show first 5 custom agents for debugging
+            const customAgents = agents.filter(a => a.id.startsWith('agent-')).slice(0, 5)
+            return (
+              <>
+                {/* Green circles: desk positions */}
+                {customAgents.map(agent => (
+                  <div
+                    key={`desk-marker-${agent.id}`}
+                    style={{
+                      position: 'absolute',
+                      left: `${agent.deskPosition.x}%`,
+                      top: `${agent.deskPosition.y}%`,
+                      width: '12px',
+                      height: '12px',
+                      borderRadius: '50%',
+                      border: '2px solid #0f0',
+                      backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                      transform: 'translate(-50%, -50%)',
+                      pointerEvents: 'none',
+                      zIndex: 5,
+                      title: `Desk: ${agent.id}`,
+                    }}
+                  />
+                ))}
+                {/* Red circles: current agent positions */}
+                {customAgents.map(agent => (
+                  <div
+                    key={`pos-marker-${agent.id}`}
+                    style={{
+                      position: 'absolute',
+                      left: `${agent.position.x}%`,
+                      top: `${agent.position.y}%`,
+                      width: '10px',
+                      height: '10px',
+                      borderRadius: '50%',
+                      border: '2px solid #f00',
+                      backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                      transform: 'translate(-50%, -50%)',
+                      pointerEvents: 'none',
+                      zIndex: 5,
+                      title: `Pos: ${agent.id}`,
+                    }}
+                  />
+                ))}
+              </>
+            )
+          })()}
+
           {/* Agents */}
-          {agents.map(agent => {
+          {(() => {
+            console.log('[DEBUG-AGENTS] Total in render array:', agents.length, 'custom agents:', agents.filter(a => a.id.startsWith('agent-')).length)
+            console.log('[DEBUG-AGENTS] Agent IDs:', agents.map(a => a.id).join(', '))
+            return agents.map((agent, idx) => {
             // Use spot zIndex override when agent is at their desk
             const spot = MAIN_ROOM.agentSpots.find(s => s.id === agent.assignedSpotId)
             const atDesk = Math.abs(agent.position.x - agent.deskPosition.x) < 1 &&
@@ -1491,6 +1759,13 @@ const App: React.FC = () => {
               agent.state === 'idle' && meta?.idleSince
                 ? Date.now() - meta.idleSince
                 : 0
+
+            if (idx === 0) console.log('[DEBUG-RENDER] Rendering agents, first agent:', { id: agent.id, role: agent.role, state: agent.state, pos: agent.position, deskPos: agent.deskPosition, desk: agent.assignedSpotId })
+
+            // Log custom agent positions
+            if (agent.id.startsWith('agent-') && idx < 3) {
+              console.log(`[DEBUG-RENDER] Custom agent ${agent.id}: state=${agent.state}, pos=(${agent.position.x.toFixed(1)},${agent.position.y.toFixed(1)}), desk=(${agent.deskPosition.x.toFixed(1)},${agent.deskPosition.y.toFixed(1)}), spot=${agent.assignedSpotId}`)
+            }
 
             return (
               <Character
@@ -1504,7 +1779,8 @@ const App: React.FC = () => {
                 inspected={agent.id === inspectedId}
               />
             )
-          })}
+            })
+          })()}
 
           {/* Angela's cat — follows whoever is cast as Angela in Office theme */}
           {(() => {
@@ -1561,6 +1837,31 @@ const App: React.FC = () => {
 
           {/* Incident mode: days-since sign (every mode), tint / beacon / status TV (incident only) */}
           <IncidentLayer />
+
+          {/* Debug visualization - show desk positions */}
+          {(() => {
+            // Show visual markers for desks only for first 3 desks to debug
+            const deskSpots = MAIN_ROOM.agentSpots.filter(s => s.type === 'desk').slice(0, 3)
+            return deskSpots.map(spot => (
+              <div
+                key={`debug-desk-${spot.id}`}
+                style={{
+                  position: 'absolute',
+                  left: `${spot.x}%`,
+                  top: `${spot.y}%`,
+                  width: '30px',
+                  height: '30px',
+                  background: 'rgba(0, 255, 0, 0.3)',
+                  border: '2px solid lime',
+                  borderRadius: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  zIndex: 5,
+                  pointerEvents: 'none',
+                }}
+                title={`Desk ${spot.id} should be here`}
+              />
+            ))
+          })()}
 
           {/* Day/night overlay */}
           <div className={`day-overlay ${effectivePhase}`} />

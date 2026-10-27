@@ -390,6 +390,26 @@ export const AGENT_CONFIGS: Record<string, { color: string; emoji: string; title
   // The boss — configured via office.config.json. The object itself, not a
   // copy: loadRuntimeConfig (src/config.ts) updates it in place.
   'boss':                  BOSS_CONFIG,
+  // Custom Odyssey Project Agents
+  'atlas':                 { color: '#6366f1', emoji: '👨‍💼', title: 'Team Lead' },
+  'rex':                   { color: '#0ea5e9', emoji: '👨‍💻', title: 'PHP Dev' },
+  'rhoda':                 { color: '#06b6d4', emoji: '👩‍💻', title: 'QA' },
+  'sage':                  { color: '#10b981', emoji: '🔬', title: 'Security' },
+  'bolt':                  { color: '#f59e0b', emoji: '⚡', title: 'Explorer' },
+  'nova':                  { color: '#8b5cf6', emoji: '🏗️', title: 'Architect' },
+  'iris':                  { color: '#ec4899', emoji: '📚', title: 'Docs' },
+  // Custom Odyssey Built-in Agents
+  'pinuno':                { color: '#06b6d4', emoji: '🤖', title: 'Coordinator' },
+  'claude':                { color: '#6366f1', emoji: '🧠', title: 'General' },
+  'hermy':                 { color: '#0ea5e9', emoji: '📖', title: 'Guide' },
+  'lucille':               { color: '#ec4899', emoji: '✍️', title: 'Writer' },
+  'dora':                  { color: '#f59e0b', emoji: '🔎', title: 'Search' },
+  'profx':                 { color: '#10b981', emoji: '🎓', title: 'General' },
+  'betty':                 { color: '#06b6d4', emoji: '🤝', title: 'Assistant' },
+  'hansel':                { color: '#0ea5e9', emoji: '💻', title: 'Dev' },
+  'ulikba':                { color: '#8b5cf6', emoji: '📋', title: 'Planner' },
+  'sarah':                 { color: '#06b6d4', emoji: '🔬', title: 'QA Lead' },
+  'jay':                   { color: '#8b5cf6', emoji: '🏛️', title: 'Architect' },
   // Subagents
   'debugger':              { color: '#e74c3c', emoji: '🔍', title: 'Debugger' },
   'code-reviewer':         { color: '#3498db', emoji: '📋', title: 'Reviewer' },
